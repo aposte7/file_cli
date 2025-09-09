@@ -1,43 +1,33 @@
 import fsPromises from 'node:fs/promises';
-import path, { join } from 'node:path';
+import path from 'node:path';
 import { fileURLToPath } from 'url';
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-async function writeToFile(filePath, content = '') {
-	const fullPath = joinPath(filePath, __dirname);
-	const dirPath = path.dirname(fullPath);
-
-	console.log(fullPath);
-
-	try {
-		await fsPromises.mkdir(dirPath, { recursive: true });
-		await fsPromises.writeFile(fullPath, content);
-		console.log('File written successfully!');
-	} catch (err) {
-		console.log(err.message || `error when writing to file`);
-	}
+function joinPath(filePath, dir = __dirname) {
+	return path.resolve(dir, filePath);
 }
 
-async function readFile(filePath, encoded = 'utf-8') {
+export async function writeToFile(filePath, content = '') {
 	const fullPath = joinPath(filePath);
-	const dirPath = path.dirname(fullPath);
-	const base = path.basename(filePath);
 
 	try {
-		const data = await fsPromises.readFile(
-			joinPath(base, dirPath),
-			encoded
-		);
-		console.log(data);
+		await fsPromises.mkdir(path.dirname(fullPath), { recursive: true });
+		await fsPromises.writeFile(fullPath, content);
+		console.log('✅ File written successfully!');
 	} catch (err) {
-		console.log(err.message || 'error while reading file');
+		console.error('❌ Error writing file:', err.message);
 	}
 }
 
-// writeToFile('file/yes//good.txt', 'Still ');
-readFile('file/yes//good.txt');
+export async function readFile(filePath, encoding = 'utf-8') {
+	const fullPath = joinPath(filePath);
 
-function joinPath(paths, dir = __dirname) {
-	return path.join(dir, paths);
+	try {
+		const data = await fsPromises.readFile(fullPath, encoding);
+		console.log(`📖 Content of ${filePath}:\n${data}`);
+	} catch (err) {
+		console.error('❌ Error reading file:', err.message);
+	}
 }
